@@ -1,6 +1,6 @@
 package model.elevator;
 
-public abstract class Elevator {
+public abstract class Elevator implements Runnable {
 
     public enum ElevatorType {
         PUBLIC,
@@ -16,6 +16,8 @@ public abstract class Elevator {
 
     protected boolean broken;
 
+    protected boolean running = true;
+
     public Elevator(
             int id,
             double maxWeight
@@ -28,4 +30,34 @@ public abstract class Elevator {
     }
 
     public abstract ElevatorType getType();
+
+    @Override
+    public void run() {
+        System.out.println(getType() + " elevator " + id + " is running!");
+        while (running) {
+            moveOnFloor();
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                running = false;
+            }
+        }
+        System.out.println(getType() + " elevator " + id + " is stopped!");
+    }
+
+    private void moveOnFloor() {
+        currentFloor++;
+
+        if (currentFloor > 5) {
+            currentFloor = 0;
+        }
+
+        System.out.println(getType() + " elevator " + id + " is on floor " + currentFloor);
+    }
+
+    public void shutDown() {
+        running = false;
+    }
 }

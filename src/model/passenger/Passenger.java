@@ -2,7 +2,7 @@ package model.passenger;
 
 import model.task.Task;
 
-public abstract class Passenger {
+public abstract class Passenger implements Runnable{
 
     public enum PassengerRole {
 
@@ -46,4 +46,39 @@ public abstract class Passenger {
     }
 
     public abstract PassengerRole getRole();
+
+    @Override
+    public void run() {
+        System.out.println(getRole() + " entered building.");
+
+        requestElevator();
+
+        doTask();
+
+        requestReturnElevator();
+
+        System.out.println(getRole() + " left building.");
+    }
+
+    private void requestReturnElevator() {
+        System.out.println(getRole() + " is returning to ground floor.");
+    }
+
+    private void doTask() {
+        try {
+            state = PassengerState.WORKING;
+            System.out.println(getRole() + " is doing task " + task.getId());
+
+            Thread.sleep(task.getDuration());
+            state = PassengerState.FINISHED;
+            System.out.println(getRole() + " is finished task " + task.getId());
+
+        }  catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    private void requestElevator() {
+        System.out.println(getRole() + " is waiting for elevator to floor " + task.getDestinationFloor());
+    }
 }
