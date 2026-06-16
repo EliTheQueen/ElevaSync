@@ -1,5 +1,7 @@
 package model.elevator;
 
+import model.passenger.Passenger;
+
 public abstract class Elevator implements Runnable {
 
     public enum ElevatorType {
@@ -8,7 +10,7 @@ public abstract class Elevator implements Runnable {
         CARGO
     }
 
-    protected int id;
+    protected final int id;
 
     protected int currentFloor;
 
@@ -17,6 +19,10 @@ public abstract class Elevator implements Runnable {
     protected boolean broken;
 
     protected boolean running = true;
+
+    protected Passenger currentPassenger;
+
+    protected ElevatorType type;
 
     public Elevator(
             int id,
