@@ -5,5 +5,6 @@ import model.passenger.Passenger;
 
 import java.util.List;
 
-public class FairnessStrategy {
+public interface FairnessStrategy {
+    Passenger choose(List<Passenger> passengers, Elevator elevator);
 }
