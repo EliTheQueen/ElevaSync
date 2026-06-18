@@ -13,8 +13,8 @@ public class PassengerQueue {
         pasengers.add(passenger);
     }
 
-    public synchronized void pickupPassenger(FairnessStrategy strategy) {
-    }
+//    public synchronized void pickupPassenger(FairnessStrategy strategy) {
+//    }
 
     public synchronized void notifyElevatorArrived() {
         notifyAll();

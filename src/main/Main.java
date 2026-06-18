@@ -1,48 +1,31 @@
 package main;
 
-import model.elevator.*;
-import model.passenger.*;
-import model.task.*;
+
+import model.simulation.SimulationManager;
+
+import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
 
-        Elevator elevator =
-                new PublicElevator(1, 500);
+        System.out.print("Enter floor count: ");
+        int floorCount = scanner.nextInt();
 
-        Thread elevatorThread =
-                new Thread(elevator);
+        System.out.print("Enter elevator count: ");
+        int elevatorCount = scanner.nextInt();
 
-        elevatorThread.start();
+        SimulationManager manager = SimulationManager.getInstance();
 
-        for (int i = 0; i < 3; i++) {
-
-            Task task =
-                    new Task(
-                            2 + i,
-                            Task.TaskPriority.HIGH,
-                            2000
-                    );
-
-            Passenger passenger =
-                    new Student(
-                            18 + i,
-                            60 + i,
-                            task
-                    );
-
-            Thread passengerThread =
-                    new Thread(passenger);
-
-            passengerThread.start();
-        }
+        manager.initialize(floorCount, elevatorCount);
+        manager.startSimulation();
 
         try {
-            Thread.sleep(8000);
+            Thread.sleep(15000);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
 
-        elevator.shutDown();
+        manager.shutdownSimulation();
     }
 }

@@ -1,11 +1,15 @@
 package model.passenger;
 
+import model.building.Building;
 import model.task.Task;
 
 public class Porter extends Passenger {
 
-    public Porter(int age, double weight, Task task) {
-        super(age, weight, task);
+    private final double cargoWeight;
+
+    public Porter(int age, double weight, Task task, Building building, double cargoWeight) {
+        super(age, weight, task, building);
+        this.cargoWeight = cargoWeight;
     }
 
     @Override

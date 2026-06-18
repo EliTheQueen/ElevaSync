@@ -1,5 +1,7 @@
 package model.passenger;
 
+import model.building.Building;
+import model.building.Floor;
 import model.task.Task;
 
 import java.util.UUID;
@@ -33,18 +35,15 @@ public abstract class Passenger implements Runnable{
     protected Task task;
     protected UUID assignedElevatorId;
     protected PassengerState state;
+    protected Building building;
 
-    public Passenger(
-            int age,
-            double weight,
-            Task task
-    ) {
+    public Passenger(int age, double weight, Task task, Building building) {
         this.age = age;
         this.weight = weight;
         this.task = task;
-
+        this.building = building;
         this.currentFloor = 0;
-        this.state = PassengerState.WAITING;
+        this.targetFloor = task.getDestinationFloor();
         this.id = UUID.randomUUID();
     }
 
@@ -54,7 +53,7 @@ public abstract class Passenger implements Runnable{
     public void run() {
         System.out.println(getRole() + " entered building.");
 
-        requestElevator();
+        waitForElevator();
 
         doTask();
 
@@ -81,7 +80,21 @@ public abstract class Passenger implements Runnable{
         }
     }
 
-    private void requestElevator() {
-        System.out.println(getRole() + " is waiting for elevator to floor " + task.getDestinationFloor());
+    private void waitForElevator() {
+        int elevatorId = 0;
+
+        Floor floor = building.getFloor(currentFloor);
+
+        floor.addPassenger(elevatorId, this);
+
+        System.out.println(getRole() + " is waiting for elevator " + elevatorId + " on floor " + currentFloor);
+
+        synchronized (this) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 }

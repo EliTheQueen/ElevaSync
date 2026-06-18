@@ -1,9 +1,11 @@
 package model.elevator;
 
+import model.building.Building;
+
 public class PublicElevator extends Elevator {
 
-    public PublicElevator(int id, double maxWeight) {
-        super(id, maxWeight);
+    public PublicElevator(int id, double maxWeight, Building building) {
+        super(id, maxWeight, building);
     }
 
     @Override
