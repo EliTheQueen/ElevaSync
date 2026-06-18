@@ -16,4 +16,13 @@ public class Porter extends Passenger {
     public PassengerRole getRole() {
         return PassengerRole.PORTER;
     }
+
+    @Override
+    public double getTotalWeight() {
+        return weight + cargoWeight;
+    }
+
+    public double getCargoWeight() {
+        return cargoWeight;
+    }
 }

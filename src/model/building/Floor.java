@@ -1,12 +1,10 @@
 package model.building;
 
 import model.elevator.Elevator;
+import model.fairness.FairnessStrategy;
 import model.passenger.Passenger;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 
 public class Floor {
     private int number;
@@ -20,20 +18,52 @@ public class Floor {
     }
 
     public synchronized void addPassenger(int elevatorId, Passenger passenger) {
-        elevatorQueues.get(elevatorId).add(passenger);
+        Queue<Passenger> queue = elevatorQueues.get(elevatorId);
+        if (queue == null) {
+            throw new IllegalArgumentException("No queue exists for elevator " + elevatorId);
+        }
+        passenger.markQueueEnterTime();
+        queue.add(passenger);
+        System.out.println(passenger.getRole() + " joined elevator " + elevatorId + " queue on floor " + number);
         notifyAll();
     }
 
-    public synchronized Passenger pollPassenger(int elevatorId) {
-        return elevatorQueues.get(elevatorId).poll();
+    public synchronized void removePassenger(int elevatorId, Passenger passenger) {
+        Queue<Passenger> queue = elevatorQueues.get(elevatorId);
+        if (queue != null) {
+            queue.remove(passenger);
+        }
+    }
+
+    public synchronized Passenger pollPassenger(int elevatorId, Elevator elevator, FairnessStrategy strategy) {
+        Queue<Passenger> queue = elevatorQueues.get(elevatorId);
+        if (queue == null || queue.isEmpty()) {
+            return null;
+        }
+
+        List<Passenger> candidates = new ArrayList<>();
+        for (Passenger passenger : queue) {
+            if (elevator.canServe(passenger)) {
+                candidates.add(passenger);
+            }
+        }
+
+        if (candidates.isEmpty()) {
+            return null;
+        }
+
+        Passenger selected = strategy.choose(candidates, elevator);
+        queue.remove(selected);
+        return selected;
     }
 
     public int getNumber() {
         return number;
     }
 
-    public synchronized Passenger selectPassenger(int elevatorId, FairnessStrategy strategy, Elevator elevator) {
+    public synchronized boolean hasWaitingPassenger(int elevatorId) {
         Queue<Passenger> queue = elevatorQueues.get(elevatorId);
-        // اینجا با strategy یکی را انتخاب کن
+        return queue != null && !queue.isEmpty();
     }
+
 }

@@ -4,6 +4,7 @@ import model.building.Building;
 import model.building.PassengerQueue;
 import model.fairness.FairnessStrategy;
 import model.passenger.Passenger;
+import model.repair.RepairCenter;
 
 import java.util.Random;
 
@@ -43,6 +44,8 @@ public abstract class Elevator implements Runnable {
     }
 
     public abstract ElevatorType getType();
+
+    public abstract boolean canServe(Passenger passenger);
 
     @Override
     public void run() {

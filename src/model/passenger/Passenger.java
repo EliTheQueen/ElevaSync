@@ -2,6 +2,7 @@ package model.passenger;
 
 import model.building.Building;
 import model.building.Floor;
+import model.simulation.SimulationManager;
 import model.task.Task;
 
 import java.util.UUID;
@@ -27,15 +28,20 @@ public abstract class Passenger implements Runnable{
 
     }
 
+    private static final long MAX_WAIT_TIME = 2500;
+
     protected final int age;
     protected final double weight;
     protected final UUID id;
     protected int currentFloor;
     protected int targetFloor;
     protected Task task;
-    protected UUID assignedElevatorId;
+    protected int assignedElevatorId = -1;
     protected PassengerState state;
     protected Building building;
+    private boolean arrived;
+    private boolean elevatorBroken;
+    private long queueEnterTime;
 
     public Passenger(int age, double weight, Task task, Building building) {
         this.age = age;
@@ -45,56 +51,149 @@ public abstract class Passenger implements Runnable{
         this.currentFloor = 0;
         this.targetFloor = task.getDestinationFloor();
         this.id = UUID.randomUUID();
+        this.state = PassengerState.WAITING;
     }
 
     public abstract PassengerRole getRole();
 
     @Override
     public void run() {
-        System.out.println(getRole() + " entered building.");
-
-        waitForElevator();
-
-        doTask();
-
-        requestReturnElevator();
-
-        System.out.println(getRole() + " left building.");
-    }
-
-    private void requestReturnElevator() {
-        System.out.println(getRole() + " is returning to ground floor.");
-    }
-
-    private void doTask() {
         try {
-            state = PassengerState.WORKING;
-            System.out.println(getRole() + " is doing task " + task.getId());
+            System.out.println(getRole() + " entered building.");
 
-            Thread.sleep(task.getDuration());
+            requestElevator(task.getDestinationFloor());
+            waitUntilArrived();
+
+            doTask();
+
+            requestElevator(0);
+            waitUntilArrived();
+
             state = PassengerState.FINISHED;
-            System.out.println(getRole() + " is finished task " + task.getId());
-
-        }  catch (InterruptedException e) {
+            System.out.println(getRole() + " left building.");
+        } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
     }
 
-    private void waitForElevator() {
-        int elevatorId = 0;
+    private void requestElevator(int destinationFloor) throws InterruptedException {
+        targetFloor = destinationFloor;
+        arrived = false;
+        elevatorBroken = false;
+        state = PassengerState.WAITING;
 
-        Floor floor = building.getFloor(currentFloor);
-
-        floor.addPassenger(elevatorId, this);
-
-        System.out.println(getRole() + " is waiting for elevator " + elevatorId + " on floor " + currentFloor);
-
-        synchronized (this) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+        int forbiddenElevatorId = -1;
+        while (!arrived) {
+            int elevatorId = building.findBestElevatorIdFor(this, forbiddenElevatorId);
+            if (elevatorId == -1) {
+                Thread.sleep(300);
+                continue;
             }
+
+            assignedElevatorId = elevatorId;
+            building.getFloor(currentFloor).addPassenger(elevatorId, this);
+
+            boolean shouldTryAnotherQueue = waitInQueueOrRide(elevatorId);
+            if (!shouldTryAnotherQueue) {
+                return;
+            }
+
+            building.getFloor(currentFloor).removePassenger(elevatorId, this);
+            forbiddenElevatorId = -1;
+            System.out.println(getRole() + " cancelled waiting for elevator " + elevatorId + " on floor " + currentFloor);
         }
+    }
+
+    private synchronized boolean waitInQueueOrRide(int elevatorId) throws InterruptedException {
+        long start = System.currentTimeMillis();
+        while (!arrived && !elevatorBroken && state == PassengerState.WAITING) {
+            long elapsed = System.currentTimeMillis() - start;
+            long remaining = MAX_WAIT_TIME - elapsed;
+            if (remaining <= 0) {
+                return true;
+            }
+            wait(remaining);
+        }
+
+        while (!arrived && !elevatorBroken) {
+            wait();
+        }
+
+        if (elevatorBroken) {
+            return true;
+        }
+        return false;
+    }
+
+    private synchronized void waitUntilArrived() throws InterruptedException {
+        while (!arrived) {
+            wait();
+        }
+    }
+
+    private void doTask() throws InterruptedException {
+        state = PassengerState.WORKING;
+        System.out.println(getRole() + " is doing task " + task.getId() + " on floor " + currentFloor);
+        Thread.sleep(task.getDuration());
+        System.out.println(getRole() + " finished task " + task.getId());
+        SimulationManager.getInstance().addCompletedTask(task.getId());
+    }
+
+    public synchronized void markRiding(int elevatorId) {
+        assignedElevatorId = elevatorId;
+        state = PassengerState.RIDING;
+        notifyAll();
+    }
+
+    public synchronized void notifyArrived(int floor) {
+        currentFloor = floor;
+        arrived = true;
+        elevatorBroken = false;
+        notifyAll();
+    }
+
+    public synchronized void notifyElevatorBroken(int floor, int brokenElevatorId) {
+        currentFloor = floor;
+        assignedElevatorId = -1;
+        state = PassengerState.WAITING;
+        elevatorBroken = true;
+        System.out.println(getRole() + " got out of broken elevator " + brokenElevatorId + " on floor " + floor);
+        notifyAll();
+    }
+
+    public void markQueueEnterTime() {
+        queueEnterTime = System.currentTimeMillis();
+    }
+
+    public long getWaitingTime() {
+        return Math.max(0, System.currentTimeMillis() - queueEnterTime);
+    }
+
+    public double getTotalWeight() {
+        return weight;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public double getWeight() {
+        return weight;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public Task getTask() {
+        return task;
+    }
+
+    public int getTargetFloor() {
+        return targetFloor;
+    }
+
+    public int getCurrentFloor() {
+        return currentFloor;
     }
 }
