@@ -3,6 +3,7 @@ package model.elevator;
 import model.building.Building;
 import model.fairness.FairnessStrategy;
 import model.passenger.Passenger;
+import model.repair.RepairCenter;
 
 public class CargoElevator extends Elevator {
 
