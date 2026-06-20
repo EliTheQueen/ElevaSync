@@ -15,7 +15,7 @@ public class Building {
     public Building(int floorCount, int elevatorCount) {
         floors = new ArrayList<>();
         for (int i = 0; i < floorCount; i++) {
-            floors.add(new Floor(i, floorCount));
+            floors.add(new Floor(i, elevatorCount));
         }
     }
 
