@@ -1,6 +1,5 @@
 package main;
 
-
 import model.simulation.SimulationManager;
 
 import java.util.Scanner;
@@ -9,10 +8,10 @@ public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.print("Enter floor count: ");
+        System.out.println("Enter floor count: ");
         int floorCount = scanner.nextInt();
 
-        System.out.print("Enter elevator count: ");
+        System.out.println("Enter elevator count: ");
         int elevatorCount = scanner.nextInt();
 
         SimulationManager manager = SimulationManager.getInstance();
@@ -26,6 +25,6 @@ public class Main {
             Thread.currentThread().interrupt();
         }
 
-        manager.shutdownSimulation();
+        manager.shutDownSimulation();
     }
 }

@@ -12,9 +12,9 @@ public class Technician extends Passenger {
     private final RepairCenter repairCenter;
     private volatile boolean running = true;
 
-    public Technician(int age, double weight, Task task, Building building, RepairCenter repairCenter, RepairCenter repairCenter1) {
+    public Technician(int age, double weight, Task task, Building building, RepairCenter repairCenter) {
         super(age, weight, task, building);
-        this.repairCenter = repairCenter1;
+        this.repairCenter = repairCenter;
     }
 
     @Override

@@ -41,6 +41,13 @@ public class SimulationManager {
 
     private SimulationManager() {}
 
+    public static synchronized SimulationManager getInstance() {
+        if (instance == null) {
+            instance = new SimulationManager();
+        }
+        return instance;
+    }
+
     public void initialize(int floorCount, int elevatorCount) {
 
         building = new Building(floorCount, elevatorCount);
@@ -130,6 +137,14 @@ public class SimulationManager {
         }
     }
 
+    private void startTechnicians() {
+        for (Technician technician : technicians) {
+            Thread thread = new Thread(technician);
+            technicianThreads.add(thread);
+            thread.start();
+        }
+    }
+
     public void addTravelTime(long time) {
         totalElevatorTravelTime.addAndGet(time);
     }
@@ -158,6 +173,12 @@ public class SimulationManager {
 
             waitingLock.notifyAll();
         }
+    }
+
+    public void startSimulation() {
+        startElevators();
+        startPassengers();
+        startTechnicians();
     }
 
     public void shutDownSimulation() {
