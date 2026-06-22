@@ -71,8 +71,8 @@ public abstract class Elevator implements Runnable {
                 Thread.currentThread().interrupt();
             }
 
-            System.out.println(getType() + " elevator " + id + " stopped!");
         }
+        System.out.println(getType() + " elevator " + id + " stopped!");
     }
 
     private void servePassenger(Passenger passenger) throws InterruptedException {
