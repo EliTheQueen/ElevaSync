@@ -99,7 +99,7 @@ public abstract class Passenger implements Runnable{
             }
 
             building.getFloor(currentFloor).removePassenger(elevatorId, this);
-            forbiddenElevatorId = -1;
+            forbiddenElevatorId = elevatorId;
             System.out.println(getRole() + " cancelled waiting for elevator " + elevatorId + " on floor " + currentFloor);
         }
     }
