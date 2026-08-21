@@ -15,7 +15,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class SimulationManager {
-    //??
+
     private static SimulationManager instance;
 
     private Building building;
