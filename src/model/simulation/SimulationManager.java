@@ -182,30 +182,45 @@ public class SimulationManager {
     }
 
     public void shutDownSimulation() {
+
+        waitForPassengerThreadsToFinish();
+
         for (Elevator elevator : elevators) {
             elevator.shutDown();
         }
+
         for (Technician technician : technicians) {
             technician.shutdown();
         }
 
         repairCenter.shutdown();
 
-        interruptAllThreads();
-        waitForThreadsToFinish();
-        
+        waitForElevatorThreadsToFinish();
+        waitForTechnicianThreadsToFinish();
+
         printReport();
     }
 
-    private void interruptAllThreads() {
-        for (Thread thread : elevatorThreads) {
-            thread.interrupt();
-        }
-        for (Thread thread : passengerThreads) {
-            thread.interrupt();
-        }
-        for (Thread thread : technicianThreads) {
-            thread.interrupt();
+    private void waitForPassengerThreadsToFinish() {
+        joinThreads(passengerThreads);
+    }
+
+    private void waitForElevatorThreadsToFinish() {
+        joinThreads(elevatorThreads);
+    }
+
+    private void waitForTechnicianThreadsToFinish() {
+        joinThreads(technicianThreads);
+    }
+
+    private void joinThreads(List<Thread> threads) {
+        for (Thread thread : threads) {
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
         }
     }
 

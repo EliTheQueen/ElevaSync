@@ -105,7 +105,7 @@ public abstract class Elevator implements Runnable {
     }
 
     private void moveTo(int targetFloor) throws InterruptedException {
-        while (running && !broken && currentFloor != targetFloor) {
+        while (!broken && currentFloor != targetFloor) {
             if (currentFloor < targetFloor) {
                 currentFloor++;
             } else {

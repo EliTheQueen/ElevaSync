@@ -102,20 +102,42 @@ public abstract class Passenger implements Runnable{
                 return;
             }
 
-            building.getFloor(currentFloor).removePassenger(elevatorId, this);
+            boolean removedFromQueue = building.getFloor(currentFloor).removePassenger(elevatorId, this);
+
+            if (!removedFromQueue) {
+                waitForArrivalOrBreakdown();
+
+                if (arrived) {
+                    return;
+                }
+            } else {
+                System.out.println(getRole() + " cancelled waiting for elevator " + elevatorId + " on floor " + currentFloor);
+            }
+
             forbiddenElevatorId = elevatorId;
-            System.out.println(getRole() + " cancelled waiting for elevator " + elevatorId + " on floor " + currentFloor);
         }
     }
 
     private synchronized boolean waitInQueueOrRide(int elevatorId) throws InterruptedException {
+
+        long maxWaitTime = Math.max(MAX_WAIT_TIME, 2L * (building.getFloorCount() - 1) * 700L + 1000L);
+
         long start = System.currentTimeMillis();
         while (!arrived && !elevatorBroken && state == PassengerState.WAITING) {
             long elapsed = System.currentTimeMillis() - start;
-            long remaining = MAX_WAIT_TIME - elapsed;
+            long remaining = maxWaitTime - elapsed;
+
             if (remaining <= 0) {
+                int alternativeElevatorId = building.findBestElevatorIdFor(this, elevatorId);
+
+                if (alternativeElevatorId == -1) {
+                    start = System.currentTimeMillis();
+                    continue;
+                }
+
                 return true;
             }
+
             wait(remaining);
         }
 
@@ -131,6 +153,12 @@ public abstract class Passenger implements Runnable{
 
     private synchronized void waitUntilArrived() throws InterruptedException {
         while (!arrived) {
+            wait();
+        }
+    }
+
+    private synchronized void waitForArrivalOrBreakdown() throws InterruptedException {
+        while (!arrived && !elevatorBroken) {
             wait();
         }
     }

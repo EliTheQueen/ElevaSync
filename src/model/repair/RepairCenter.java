@@ -12,7 +12,7 @@ public class RepairCenter {
 
     public synchronized void reportBrokenElevator(Elevator elevator) {
         brokenElevators.add(elevator);
-        System.out.println("Repair center received broken elevator" + elevator.getId());
+        System.out.println("Repair center received broken elevator " + elevator.getId());
         notifyAll();
     }
 

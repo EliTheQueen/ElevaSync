@@ -33,7 +33,7 @@ public class Technician extends Passenger {
                     break;
                 }
 
-                System.out.println("Technician is going to repair elevator" + elevator.getId());
+                System.out.println("Technician is going to repair elevator " + elevator.getId());
                 Thread.sleep(REPAIR_TIME);
 
                 elevator.repair();

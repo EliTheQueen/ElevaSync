@@ -28,11 +28,9 @@ public class Floor {
         notifyAll();
     }
 
-    public synchronized void removePassenger(int elevatorId, Passenger passenger) {
+    public synchronized boolean removePassenger(int elevatorId, Passenger passenger) {
         Queue<Passenger> queue = elevatorQueues.get(elevatorId);
-        if (queue != null) {
-            queue.remove(passenger);
-        }
+        return queue != null && queue.remove(passenger);
     }
 
     public synchronized Passenger pollPassenger(int elevatorId, Elevator elevator, FairnessStrategy strategy) {
