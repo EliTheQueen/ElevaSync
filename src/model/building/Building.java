@@ -41,11 +41,31 @@ public class Building {
     }
 
     public synchronized int findBestElevatorIdFor(Passenger passenger, int forbiddenElevatorNumber) {
+
+        boolean isVipPassenger = passenger.getRole() == Passenger.PassengerRole.PROFESSOR
+                        || passenger.getRole() == Passenger.PassengerRole.EDUCATIONAL_DEPUTY;
+
+        if (isVipPassenger) {
+            for (Elevator elevator : elevators) {
+                if (elevator.getType() == Elevator.ElevatorType.VIP
+                        && elevator.getId() != forbiddenElevatorNumber
+                        && elevator.canServe(passenger)
+                        && !elevator.isBroken()) {
+
+                    return elevator.getId();
+                }
+            }
+        }
+
         for (Elevator elevator : elevators) {
-            if (elevator.getId() != forbiddenElevatorNumber && elevator.canServe(passenger) && !elevator.isBroken()) {
+            if (elevator.getId() != forbiddenElevatorNumber
+                    && elevator.canServe(passenger)
+                    && !elevator.isBroken()) {
+
                 return elevator.getId();
             }
         }
+
         return -1;
     }
 }
