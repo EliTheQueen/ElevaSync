@@ -26,7 +26,7 @@ public abstract class Elevator implements Runnable {
     protected final RepairCenter repairCenter;
 
     protected int currentFloor;
-    protected boolean broken;
+    protected volatile boolean broken;
     protected volatile boolean running = true;
     protected Passenger currentPassenger;
 
@@ -60,6 +60,10 @@ public abstract class Elevator implements Runnable {
 
                 checkBreakdown();
 
+                if (broken) {
+                    continue;
+                }
+
                 Passenger passenger = building.getFloor(currentFloor).pollPassenger(id, this, fairnessStrategy);
                 if (passenger != null) {
                     servePassenger(passenger);
@@ -79,17 +83,25 @@ public abstract class Elevator implements Runnable {
         double passengerWeight = passenger.getTotalWeight();
         SimulationManager.getInstance().enterElevatorWeight(passengerWeight);
 
-        currentPassenger = passenger;
-        passenger.markRiding(id);
-        System.out.println(passenger.getRole() + " entered " + getType() + " elevator " + id + " on floor " + currentFloor);
+        try {
+            currentPassenger = passenger;
+            passenger.markRiding(id);
+            System.out.println(passenger.getRole() + " entered " + getType() + " elevator " + id + " on floor " + currentFloor);
 
-        moveTo(passenger.getTargetFloor());
+            moveTo(passenger.getTargetFloor());
 
-        System.out.println(passenger.getRole() + " left elevator " + id + " on floor " + currentFloor);
-        passenger.notifyArrived(currentFloor);
-        currentPassenger = null;
+            if (broken || currentFloor != passenger.getTargetFloor()) {
+                return;
+            }
 
-        SimulationManager.getInstance().leaveElevatorWeight(passengerWeight);
+            System.out.println(passenger.getRole() + " left elevator " + id + " on floor " + currentFloor);
+
+            passenger.notifyArrived(currentFloor);
+
+        } finally {
+            currentPassenger = null;
+            SimulationManager.getInstance().leaveElevatorWeight(passengerWeight);
+        }
     }
 
     private void moveTo(int targetFloor) throws InterruptedException {

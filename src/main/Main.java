@@ -14,6 +14,16 @@ public class Main {
         System.out.println("Enter elevator count: ");
         int elevatorCount = scanner.nextInt();
 
+        if (floorCount < 2) {
+            System.out.println("Floor count must be at least 2.");
+            return;
+        }
+
+        if (elevatorCount < 3) {
+            System.out.println("Elevator count must be at least 3.");
+            return;
+        }
+
         SimulationManager manager = SimulationManager.getInstance();
 
         manager.initialize(floorCount, elevatorCount);

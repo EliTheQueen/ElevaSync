@@ -86,14 +86,18 @@ public abstract class Passenger implements Runnable{
         while (!arrived) {
             int elevatorId = building.findBestElevatorIdFor(this, forbiddenElevatorId);
             if (elevatorId == -1) {
+                forbiddenElevatorId = -1;
                 Thread.sleep(300);
                 continue;
             }
 
+            elevatorBroken = false;
             assignedElevatorId = elevatorId;
+
             building.getFloor(currentFloor).addPassenger(elevatorId, this);
 
             boolean shouldTryAnotherQueue = waitInQueueOrRide(elevatorId);
+
             if (!shouldTryAnotherQueue) {
                 return;
             }
